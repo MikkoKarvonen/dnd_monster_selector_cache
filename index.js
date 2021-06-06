@@ -11,6 +11,27 @@ client.on("error", function (error) {
   console.error(error);
 });
 
+app.get("/api/monsters/:id", (req, res) => {
+  const param = req.params.id;
+  client.exists(param, (error, exists) => {
+    if (error) {
+      return error;
+    }
+    if (exists === 0) {
+      fetch(`https://www.dnd5eapi.co/api/monsters/${param}`)
+        .then((res) => res.json())
+        .then((body) => {
+          client.set(param, JSON.stringify(body));
+          res.json(body);
+        });
+    } else {
+      client.get(param, function (err, reply) {
+        res.json(JSON.parse(reply));
+      });
+    }
+  });
+});
+
 app.get("/api/monsters/", (req, res) => {
   client.exists("monsters", (error, exists) => {
     if (error) {
